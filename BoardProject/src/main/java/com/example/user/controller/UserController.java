@@ -8,6 +8,10 @@ import com.example.user.service.UserService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -51,7 +55,9 @@ public class UserController {
             session.setAttribute("loginUsername", user.getUsername());
             session.setAttribute("loginName", user.getName());
             session.setAttribute("loginRole", user.getRole());
-            return "redirect:/";
+            String msg = URLEncoder.encode("로그인되었습니다.", StandardCharsets.UTF_8);
+            return "redirect:/?toast=" + msg; 
+            
         } catch (IllegalArgumentException e) {
             model.addAttribute("error", e.getMessage());
             return "user/login";
@@ -81,7 +87,8 @@ public class UserController {
     
     @GetMapping("/logout")
     public String logout(HttpSession session) {
-        session.invalidate();              // 세션 완전 종료
-        return "redirect:/?logout=1";      // 표시용 파라미터
+        session.invalidate();
+        String msg = URLEncoder.encode("로그아웃되었습니다.", StandardCharsets.UTF_8);
+        return "redirect:/?toast=" + msg; // 메인으로
     }
 }

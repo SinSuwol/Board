@@ -2,11 +2,16 @@ package com.example.board.controller;
 
 import com.example.board.entity.Board;
 import com.example.board.service.BoardService;
+import com.example.board.service.CommentService;
+
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 @Controller
 @RequestMapping("/board")
@@ -14,12 +19,17 @@ import org.springframework.web.bind.annotation.*;
 public class BoardController {
 
 	private final BoardService boardService;
+	 private final CommentService commentService; 
 
 	@GetMapping("/list")
 	public String list(@RequestParam(name = "page", defaultValue = "0") int page,
 			@RequestParam(name = "size", defaultValue = "10") int size,
-			@RequestParam(name = "type", required = false) String type, // title | writer | all(기본)
+			@RequestParam(name = "type", required = false) String type, // title | writer | all
 			@RequestParam(name = "keyword", required = false) String keyword, Model model) {
+
+		// null/빈 문자열이면 기본값 all
+		if (type == null || type.isBlank())
+			type = "all";
 
 		var boardPage = boardService.findAllPaged(type, keyword, page, size);
 		model.addAttribute("page", boardPage);
@@ -40,27 +50,31 @@ public class BoardController {
 		return "board/write";
 	}
 
+	// 작성 처리
 	@PostMapping("/write")
 	public String write(@ModelAttribute Board board, HttpSession session, Model model) {
 		Object uid = session.getAttribute("loginUserId");
 		if (uid == null) {
 			model.addAttribute("msg", "로그인이 필요합니다.");
 			model.addAttribute("redirectUrl", "/user/login");
-			
 			return "common/alert";
 		}
 		String username = (String) session.getAttribute("loginUsername");
 		board.setWriter(username);
 		boardService.save(board);
-		
-		return "redirect:/board/list";
+
+		String msg = enc("등록되었습니다.");
+		return "redirect:/board/list?toast=" + msg;
 	}
 
 	// 상세
 	@GetMapping("/{id}")
 	public String detail(@PathVariable("id") Long id, Model model) {
-		model.addAttribute("board", boardService.findById(id).orElseThrow());
-		
+		var board = boardService.findById(id).orElseThrow();
+		model.addAttribute("board", board);
+
+		// 댓글 목록 추가
+		model.addAttribute("comments", commentService.listByBoard(id));
 		return "board/detail";
 	}
 
@@ -82,19 +96,18 @@ public class BoardController {
 	@PostMapping("/edit/{id}")
 	public String edit(@PathVariable("id") Long id, @RequestParam("title") String title,
 			@RequestParam("content") String content, HttpSession session, Model model) {
-		
+
 		var board = boardService.findById(id).orElseThrow();
-		
 		String loginUsername = (String) session.getAttribute("loginUsername");
-		
 		if (loginUsername == null || !loginUsername.equals(board.getWriter())) {
 			model.addAttribute("msg", "수정 권한이 없습니다.");
 			model.addAttribute("redirectUrl", "/board/" + id);
 			return "common/alert";
 		}
 		boardService.update(id, title, content);
-		
-		return "redirect:/board/" + id;
+
+		String msg = enc("수정되었습니다.");
+		return "redirect:/board/" + id + "?toast=" + msg;
 	}
 
 	// 삭제 (작성자만) - POST 권장
@@ -108,6 +121,13 @@ public class BoardController {
 			return "common/alert";
 		}
 		boardService.delete(id);
-		return "redirect:/board/list";
+
+		String msg = enc("삭제되었습니다.");
+		return "redirect:/board/list?toast=" + msg;
+	}
+
+	// --- util ---
+	private String enc(String s) {
+		return URLEncoder.encode(s, StandardCharsets.UTF_8);
 	}
 }
