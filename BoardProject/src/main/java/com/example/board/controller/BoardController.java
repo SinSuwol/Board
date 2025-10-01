@@ -110,7 +110,7 @@ public class BoardController {
 		return "redirect:/board/" + id + "?toast=" + msg;
 	}
 
-	// 삭제 (작성자만) - POST 권장
+	// 삭제 (작성자만)
 	@PostMapping("/delete/{id}")
 	public String delete(@PathVariable("id") Long id, HttpSession session, Model model) {
 		var board = boardService.findById(id).orElseThrow();
