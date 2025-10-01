@@ -1,7 +1,8 @@
 #Green_Board
 
 그린보드 프로젝트 (JSP + Spring Boot) <br>
-약간의 AI의 도움을 받아 개발되었습니다. 🙌 <br>
+약간의 AI의 도움을 받아 개발되었습니다. 🙌 (꾸벅) <br>
+CSS [AI외주] <br>
 
 <p> <img width="212" height="267" alt="image" src="https://github.com/user-attachments/assets/59b16b5e-c6ae-4342-a9d0-1e8fe818617f" />
   <img width="209" height="224" alt="image" src="https://github.com/user-attachments/assets/2dd2ecae-f210-4968-bdc1-e91ee73b9168" /> </p>
