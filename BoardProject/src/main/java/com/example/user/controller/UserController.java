@@ -1,6 +1,7 @@
 package com.example.user.controller;
 
 import com.example.user.entity.User;
+import com.example.board.service.BoardService;
 import com.example.user.dto.LoginRequest;
 import com.example.user.dto.RegisterRequest;
 import com.example.user.service.UserService;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+    private final BoardService boardService;
 
     @GetMapping("/register")
     public String registerForm() {
@@ -49,7 +51,7 @@ public class UserController {
             session.setAttribute("loginUsername", user.getUsername());
             session.setAttribute("loginName", user.getName());
             session.setAttribute("loginRole", user.getRole());
-            return "redirect:/user/mypage";
+            return "redirect:/";
         } catch (IllegalArgumentException e) {
             model.addAttribute("error", e.getMessage());
             return "user/login";
@@ -57,17 +59,29 @@ public class UserController {
     }
 
     @GetMapping("/mypage")
-    public String mypage(HttpSession session, Model model) {
-        Object uid = session.getAttribute("loginUserId");
-        if (uid == null) return "redirect:/user/login";
-        model.addAttribute("username", session.getAttribute("loginUsername"));
-        model.addAttribute("name", session.getAttribute("loginName"));
+    public String mypage(@RequestParam(name="page", defaultValue="0") int page,
+                         @RequestParam(name="size", defaultValue="10") int size,
+                         HttpSession session, Model model) {
+        String username = (String) session.getAttribute("loginUsername"); // 아이디
+        String name     = (String) session.getAttribute("loginName");      // 사용자 이름
+        if (username == null) {
+            model.addAttribute("msg", "로그인이 필요합니다.");
+            model.addAttribute("redirectUrl", "/user/login");
+            return "common/alert";
+        }
+
+        var myPosts = boardService.findMinePaged(username, name, page, size);
+        model.addAttribute("username", username);
+        model.addAttribute("page", myPosts);
+        model.addAttribute("size", size);
         return "user/mypage";
     }
 
-    @PostMapping("/logout")
+
+    
+    @GetMapping("/logout")
     public String logout(HttpSession session) {
-        session.invalidate();
-        return "redirect:/user/login";
+        session.invalidate();              // 세션 완전 종료
+        return "redirect:/?logout=1";      // 표시용 파라미터
     }
 }

@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 
 @Entity
 @Table(name = "board")
@@ -30,5 +32,10 @@ public class Board {
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
+    }
+    
+    public Date getCreatedAtDate() {
+        return createdAt == null ? null :
+               Date.from(createdAt.atZone(ZoneId.systemDefault()).toInstant());
     }
 }
