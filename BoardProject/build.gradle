@@ -1,7 +1,7 @@
 plugins {
-	id 'java'
-	id 'org.springframework.boot' version '3.5.6'
-	id 'io.spring.dependency-management' version '1.1.7'
+    id 'java'
+    id 'org.springframework.boot' version '3.3.3'
+    id 'io.spring.dependency-management' version '1.1.6'
 }
 
 group = 'com.example.board'
@@ -9,47 +9,40 @@ version = '0.0.1-SNAPSHOT'
 description = 'Demo project for Spring Boot'
 
 java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(21)
-	}
+    toolchain { languageVersion = JavaLanguageVersion.of(21) }
 }
 
 configurations {
-	compileOnly {
-		extendsFrom annotationProcessor
-	}
+    compileOnly { extendsFrom annotationProcessor }
 }
 
-repositories {
-	mavenCentral()
-}
+repositories { mavenCentral() }
 
 dependencies {
     // Web & JSP
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.apache.tomcat.embed:tomcat-embed-jasper'             // JSP 컴파일러
-    implementation 'jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl:3.0.1' // JSTL (jakarta)
-   
+    implementation 'org.apache.tomcat.embed:tomcat-embed-jasper'
 
-    // JPA
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    // ✅ JSTL (API + 구현체)
+    implementation 'jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api:3.0.0'
+    implementation 'org.glassfish.web:jakarta.servlet.jsp.jstl:3.0.1'
+
+    // Validation / JPA / Crypto
     implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.security:spring-security-crypto'
 
     // Lombok
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    // DB Driver (Oracle)  ← 버전 명시 필수
-    runtimeOnly 'com.oracle.database.jdbc:ojdbc11'
+    // Oracle JDBC (버전 명시)
+    runtimeOnly 'com.oracle.database.jdbc:ojdbc11:23.5.0.24.07'
 
-    // Devtools
+    // Devtools & Test
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
-
-    // Test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
-tasks.named('test') {
-	useJUnitPlatform()
-}
+tasks.named('test') { useJUnitPlatform() }
